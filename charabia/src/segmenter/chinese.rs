@@ -54,7 +54,7 @@ impl Segmenter for ChineseSegmenter {
         let segmented: Vec<&str> = JIEBA
             .cut(to_segment, false) // disable Hidden Markov Models.
             .into_iter()
-            .flat_map(|x| cut_for_search(x))
+            .flat_map(|x| cut_for_search(x.word))
             .collect();
         Box::new(segmented.into_iter())
     }
