@@ -20,12 +20,12 @@ fst = "0.4"
 jieba-rs = { version = "0.10.3", optional = true }
 serde = "1.0.229"
 slice-group-by = "0.3.1"
-whatlang = "0.16.4"
-lindera = { version = "0.43.3", default-features = false, optional = true }
-pinyin = { version = "0.10", default-features = false, features = [
+whatlang = "0.18.0"
+lindera = { version = "5.1.0", default-features = false, optional = true }
+pinyin = { version = "0.11", default-features = false, features = [
     "with_tone",
 ], optional = true }
-wana_kana = { version = "4.0.0", optional = true }
+wana_kana = { version = "5.0.0", optional = true }
 unicode-normalization = "0.1.25"
 irg-kvariants = { path = "../irg-kvariants", version = "=0.1.1" }
 
@@ -54,13 +54,13 @@ chinese-normalization-pinyin = ["dep:pinyin", "chinese-normalization"]
 hebrew = []
 
 # allow japanese specialized tokenization
-japanese = ["japanese-segmentation-unidic", "japanese-transliteration"]
-japanese-segmentation-ipadic = ["lindera/ipadic", "lindera/compress"]
-japanese-segmentation-unidic = ["lindera/unidic", "lindera/compress"]
+japanese = ["japanese-segmentation-unidic", "japanese-transliteration", "lindera/embed-unidic"]
+japanese-segmentation-ipadic = ["lindera/lindera-ipadic", "lindera/embed-ipadic"]
+japanese-segmentation-unidic = ["lindera/lindera-unidic", "lindera/embed-unidic"]
 japanese-transliteration = ["dep:wana_kana"]
 
 # allow korean specialized tokenization
-korean = ["lindera/ko-dic", "lindera/compress"]
+korean = ["lindera/lindera-ko-dic", "lindera/embed-ko-dic"]
 
 # allow thai specialized tokenization
 thai = []
@@ -89,7 +89,7 @@ turkish = []
 german-segmentation = []
 
 [dev-dependencies]
-criterion = "0.7"
+criterion = "0.8"
 quickcheck = "1"
 quickcheck_macros = "1"
 mimalloc = "0.1.52"
