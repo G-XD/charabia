@@ -1,11 +1,9 @@
+use std::borrow::Cow;
 use std::sync::LazyLock;
 
-use lindera::dictionary::{load_dictionary_from_kind, DictionaryKind};
+use lindera::dictionary::{load_embedded_dictionary, DictionaryKind};
 use lindera::mode::{Mode, Penalty};
 use lindera::segmenter::Segmenter as LinderaSegmenter;
-use lindera::tokenizer::Tokenizer;
-#[cfg(feature = "japanese-segmentation-ipadic")]
-use lindera::Penalty;
 
 use crate::segmenter::Segmenter;
 
@@ -14,29 +12,22 @@ use crate::segmenter::Segmenter;
 /// This Segmenter uses lindera internally to segment the provided text.
 pub struct JapaneseSegmenter;
 
-static LINDERA: LazyLock<Tokenizer> = LazyLock::new(|| {
+static LINDERA: LazyLock<LinderaSegmenter> = LazyLock::new(|| {
     #[cfg(all(feature = "japanese-segmentation-ipadic", feature = "japanese-segmentation-unidic"))]
     compile_error!("Feature japanese-segmentation-ipadic and japanese-segmentation-unidic are mutually exclusive and cannot be enabled together");
 
     #[cfg(feature = "japanese-segmentation-ipadic")]
-    {
-        let dictionary = load_dictionary_from_kind(DictionaryKind::IPADIC).unwrap();
-        let segmenter =
-            LinderaSegmenter::new(Mode::Decompose(Penalty::default()), dictionary, None);
-        Tokenizer::new(segmenter)
-    }
+    let dictionary_kind = DictionaryKind::IPADIC;
     #[cfg(feature = "japanese-segmentation-unidic")]
-    {
-        let dictionary = load_dictionary_from_kind(DictionaryKind::UniDic).unwrap();
-        let segmenter =
-            LinderaSegmenter::new(Mode::Decompose(Penalty::default()), dictionary, None);
-        Tokenizer::new(segmenter)
-    }
+    let dictionary_kind = DictionaryKind::UniDic;
+
+    let dictionary = load_embedded_dictionary(dictionary_kind).unwrap();
+    LinderaSegmenter::new(Mode::Decompose(Penalty::default()), dictionary, None)
 });
 
 impl Segmenter for JapaneseSegmenter {
     fn segment_str<'o>(&self, to_segment: &'o str) -> Box<dyn Iterator<Item = &'o str> + 'o> {
-        let tokens = LINDERA.tokenize(to_segment).unwrap();
+        let tokens = LINDERA.segment(Cow::Borrowed(to_segment)).unwrap();
 
         let result: Vec<&'o str> = tokens
             .into_iter()

@@ -1,9 +1,9 @@
+use std::borrow::Cow;
 use std::sync::LazyLock;
 
-use lindera::dictionary::{load_dictionary_from_kind, DictionaryKind};
+use lindera::dictionary::{load_embedded_dictionary, DictionaryKind};
 use lindera::mode::{Mode, Penalty};
 use lindera::segmenter::Segmenter as LinderaSegmenter;
-use lindera::tokenizer::Tokenizer;
 
 use crate::segmenter::Segmenter;
 
@@ -12,15 +12,14 @@ use crate::segmenter::Segmenter;
 /// This Segmenter uses lindera internally to segment the provided text.
 pub struct KoreanSegmenter;
 
-static LINDERA: LazyLock<Tokenizer> = LazyLock::new(|| {
-    let dictionary = load_dictionary_from_kind(DictionaryKind::KoDic).unwrap();
-    let segmenter = LinderaSegmenter::new(Mode::Decompose(Penalty::default()), dictionary, None);
-    Tokenizer::new(segmenter)
+static LINDERA: LazyLock<LinderaSegmenter> = LazyLock::new(|| {
+    let dictionary = load_embedded_dictionary(DictionaryKind::KoDic).unwrap();
+    LinderaSegmenter::new(Mode::Decompose(Penalty::default()), dictionary, None)
 });
 
 impl Segmenter for KoreanSegmenter {
     fn segment_str<'o>(&self, to_segment: &'o str) -> Box<dyn Iterator<Item = &'o str> + 'o> {
-        let tokens = LINDERA.tokenize(to_segment).unwrap();
+        let tokens = LINDERA.segment(Cow::Borrowed(to_segment)).unwrap();
 
         let result: Vec<&'o str> = tokens
             .into_iter()

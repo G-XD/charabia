@@ -117,7 +117,8 @@ make_language! {
     Slk,
     Cat,
     Tgl,
-    Hye
+    Hye,
+    Cym
 }
 
 macro_rules! make_script {
